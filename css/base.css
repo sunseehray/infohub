@@ -1,0 +1,35 @@
+/* ══════════════════════════════════════
+   BASE — Reset, Variables, Typography
+══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F5F2EC;
+  --surface: #FFFDF9;
+  --surface-2: #EDE9E1;
+  --border: #D9D3C7;
+  --ink: #1C1A17;
+  --ink-muted: #7A7469;
+  --accent: #2E6B4F;
+  --accent-light: #EAF2EE;
+  --accent-warm: #C4570F;
+  --accent-warm-light: #FDF0E8;
+  --tag-blue: #1A4F7A;
+  --tag-blue-light: #E6F0F9;
+  --tag-purple: #5B3A8E;
+  --tag-purple-light: #F0EBF9;
+  --tag-yellow: #92400E;
+  --tag-yellow-light: #FEF3C7;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(28,26,23,0.07);
+  --shadow-hover: 0 6px 24px rgba(28,26,23,0.13);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  letter-spacing: -0.01em;
+}

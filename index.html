@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Info Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="css/calendar.css" />
+  <link rel="stylesheet" href="css/tasks.css" />
+  <link rel="stylesheet" href="css/modals.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     HEADER (shared across all pages)
+══════════════════════════════════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">Info<span>Hub</span></a>
+
+    <nav class="desktop-nav">
+      <a id="nav-home"  href="#">Dashboard</a>
+      <a id="nav-tasks" href="#">Tasks</a>
+      <a href="#">Meals &amp; Recipes</a>
+      <a href="#">Cleaning Zones</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn create-task">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Create Task
+      </button>
+      <button class="icon-btn grocery">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Grocery List
+      </button>
+      <button class="icon-btn account" title="Account">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+      <button class="burger" id="burgerBtn" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-nav-overlay" id="mobileOverlay"></div>
+<div class="mobile-nav" id="mobileNav">
+  <a id="mnav-home"  href="#">Dashboard</a>
+  <a id="mnav-tasks" href="#">Tasks</a>
+  <a href="#">Meals &amp; Recipes</a>
+  <a href="#">Cleaning Zones</a>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE: HOME (Dashboard)
+══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="home-main">
+    <p class="section-label">Dashboard</p>
+    <div class="columns">
+
+      <!-- Notifications -->
+      <div class="col-card">
+        <div class="col-title">Notifications <span class="badge">3 new</span></div>
+        <p class="col-subtitle">Updates &amp; notices</p>
+        <div class="notif-widget notif-warn">
+          <div class="notif-header"><span class="notif-title">⚠️ Task Overdue</span><span class="notif-time">2h ago</span></div>
+          <div class="notif-body">Your budget report was due yesterday. Please submit as soon as possible.</div>
+        </div>
+        <div class="notif-widget notif-info">
+          <div class="notif-header"><span class="notif-title">📋 Grocery List Updated</span><span class="notif-time">5h ago</span></div>
+          <div class="notif-body">3 new items were added to your grocery list from your upcoming meal plan.</div>
+        </div>
+        <div class="notif-widget notif-ok">
+          <div class="notif-header"><span class="notif-title">✅ Cleaning Zone Done</span><span class="notif-time">Yesterday</span></div>
+          <div class="notif-body">Kitchen deep clean marked complete. Next scheduled: Apr 25.</div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="col-card col-calendar" id="calendarCard">
+
+        <!-- Desktop: month grid -->
+        <div class="cal-header desktop-cal-only">
+          <div class="cal-month-label" id="calMonthLabel"></div>
+          <div class="cal-nav">
+            <button class="cal-nav-btn" data-cal-nav="-1" title="Previous month">&#8592;</button>
+            <button class="cal-nav-btn" data-cal-nav="0"  title="Today" style="font-size:0.7rem;font-weight:700;width:auto;padding:0 8px;border-radius:10px;">Today</button>
+            <button class="cal-nav-btn" data-cal-nav="1"  title="Next month">&#8594;</button>
+          </div>
+        </div>
+        <div class="cal-dow desktop-cal-only">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+          <span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="cal-grid desktop-cal-only" id="calGrid"></div>
+        <div class="day-detail desktop-cal-only" id="dayDetail">
+          <div class="day-detail-title" id="dayDetailTitle">Select a day</div>
+          <div id="dayDetailItems"><div class="day-detail-empty">Nothing scheduled.</div></div>
+        </div>
+
+        <!-- Mobile: 3-day swipeable agenda -->
+        <div class="mobile-agenda mobile-cal-only" id="mobileAgenda">
+          <div class="agenda-header">
+            <button class="agenda-nav-btn" data-agenda-nav="-3">&#8592;</button>
+            <div class="agenda-range-label" id="agendaRangeLabel"></div>
+            <button class="agenda-nav-btn" data-agenda-nav="3">&#8594;</button>
+          </div>
+          <div class="agenda-track-wrap" id="agendaTrackWrap">
+            <div class="agenda-track" id="agendaTrack"></div>
+          </div>
+        </div>
+
+        <!-- Wheel FAB -->
+        <div class="cal-fab-wrap" id="calFabWrap">
+          <div class="wheel-options">
+            <div class="wheel-option wo-reminder">
+              <button class="wheel-option-btn" title="Add Reminder">🔔</button>
+              <span class="wheel-option-label">Reminder</span>
+            </div>
+            <div class="wheel-option wo-task">
+              <button class="wheel-option-btn" title="Add Task">✓</button>
+              <span class="wheel-option-label">Task</span>
+            </div>
+            <div class="wheel-option wo-event">
+              <button class="wheel-option-btn" title="Add Event">📅</button>
+              <span class="wheel-option-label">Event</span>
+            </div>
+          </div>
+          <button class="cal-fab" id="calFab" title="Add">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="wheel-backdrop" id="wheelBackdrop"></div>
+      </div>
+
+      <!-- Open Tasks -->
+      <div class="col-card">
+        <div class="col-title">Open Tasks <span class="badge">5 open</span></div>
+        <p class="col-subtitle">Click a task to view details</p>
+
+        <a class="task-widget" href="#">
+          <span class="priority-dot dot-high"></span><span class="task-check"></span>
+          <div class="task-info">
+            <div class="task-name">Submit quarterly budget report</div>
+            <div class="task-meta"><span class="task-tag tag-orange">Work</span><span class="task-due overdue">Due yesterday</span></div>
+          </div>
+        </a>
+        <a class="task-widget" href="#">
+          <span class="priority-dot dot-med"></span><span class="task-check"></span>
+          <div class="task-info">
+            <div class="task-name">Book dentist appointment</div>
+            <div class="task-meta"><span class="task-tag tag-blue">Health</span><span class="task-due">Due Apr 15</span></div>
+          </div>
+        </a>
+        <a class="task-widget" href="#">
+          <span class="priority-dot dot-low"></span><span class="task-check"></span>
+          <div class="task-info">
+            <div class="task-name">Water the indoor plants</div>
+            <div class="task-meta"><span class="task-tag tag-green">Home</span><span class="task-due">Due today</span></div>
+          </div>
+        </a>
+        <a class="task-widget" href="#">
+          <span class="priority-dot dot-med"></span><span class="task-check"></span>
+          <div class="task-info">
+            <div class="task-name">Prep meal plan for next week</div>
+            <div class="task-meta"><span class="task-tag tag-green">Meals</span><span class="task-due">Due Apr 13</span></div>
+          </div>
+        </a>
+        <a class="task-widget" href="#">
+          <span class="priority-dot dot-low"></span><span class="task-check"></span>
+          <div class="task-info">
+            <div class="task-name">Reply to HOA email</div>
+            <div class="task-meta"><span class="task-tag tag-blue">Admin</span><span class="task-due">Due Apr 18</span></div>
+          </div>
+        </a>
+      </div>
+
+    </div><!-- /columns -->
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE: TASKS
+══════════════════════════════════════════════════════ -->
+<div class="page" id="page-tasks">
+  <div class="tasks-main">
+
+    <div class="page-hdr">
+      <div>
+        <h1>Tasks</h1>
+        <p>Manage and track all tasks across your household &amp; projects</p>
+      </div>
+      <button class="icon-btn create-task" style="display:flex;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Create Task
+      </button>
+    </div>
+
+    <div class="filters-row">
+      <div class="filter-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink-muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="taskSearch" placeholder="Search by title, description or assignee…" />
+      </div>
+      <select class="filter-select" id="statusFilter">
+        <option value="">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="Reserved">Reserved</option>
+        <option value="For Review">For Review</option>
+        <option value="Issue">Issue</option>
+        <option value="Done">Done</option>
+      </select>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="title">Title <span class="sort-icon" id="sort-title">↕</span></th>
+              <th>Description</th>
+              <th data-sort="points">Points <span class="sort-icon" id="sort-points">↕</span></th>
+              <th data-sort="dueDate">Due Date <span class="sort-icon" id="sort-dueDate">↕</span></th>
+              <th data-sort="status">Status <span class="sort-icon" id="sort-status">↕</span></th>
+              <th>Assignee</th>
+            </tr>
+          </thead>
+          <tbody id="taskTableBody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span class="table-footer-count" id="tableCount"></span>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════ -->
+
+<!-- Event modal -->
+<div class="modal-overlay" id="modal-event">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span class="modal-title-dot dot-modal-event"></span>New Event</div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Event Title *</label>
+        <input class="form-input" type="text" placeholder="e.g. Team lunch, Doctor visit…" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date *</label>
+          <input class="form-input" type="date" id="event-date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input class="form-input" type="time" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">End Date</label>
+          <input class="form-input" type="date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Time</label>
+          <input class="form-input" type="time" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Location</label>
+        <input class="form-input" type="text" placeholder="Add a location…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" placeholder="Any additional details…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Colour</label>
+        <div class="color-row" id="event-colors"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel">Cancel</button>
+      <button class="btn-save save-event">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task modal -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span class="modal-title-dot dot-modal-task"></span>New Task</div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Task Title *</label>
+        <input class="form-input" type="text" placeholder="e.g. Call the plumber…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" placeholder="What needs to be done?"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Due Date *</label>
+          <input class="form-input" type="date" id="task-date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Points</label>
+          <input class="form-input" type="number" placeholder="e.g. 5" min="1" max="100" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select">
+            <option>Open</option>
+            <option>Reserved</option>
+            <option>For Review</option>
+            <option>Issue</option>
+            <option>Done</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Assignee</label>
+          <input class="form-input" type="text" placeholder="@username" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel">Cancel</button>
+      <button class="btn-save save-task">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reminder modal -->
+<div class="modal-overlay" id="modal-reminder">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span class="modal-title-dot dot-modal-reminder"></span>New Reminder</div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Reminder Title *</label>
+        <input class="form-input" type="text" placeholder="e.g. Pay electricity bill…" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date *</label>
+          <input class="form-input" type="date" id="reminder-date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input class="form-input" type="time" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Repeat</label>
+        <select class="form-select">
+          <option value="">Never</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note</label>
+        <textarea class="form-textarea" placeholder="Any extra notes…" style="min-height:56px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel">Cancel</button>
+      <button class="btn-save save-reminder">Save Reminder</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT — Models → Views → Controllers → main
+══════════════════════════════════════════════════════ -->
+<!-- Models -->
+<script src="js/models/CalendarModel.js"></script>
+<script src="js/models/TaskModel.js"></script>
+<!-- Views -->
+<script src="js/views/CalendarView.js"></script>
+<script src="js/views/TaskView.js"></script>
+<!-- Controllers -->
+<script src="js/controllers/AppController.js"></script>
+<script src="js/controllers/CalendarController.js"></script>
+<script src="js/controllers/TaskController.js"></script>
+<!-- Boot -->
+<script src="js/main.js"></script>
+
+</body>
+</html>

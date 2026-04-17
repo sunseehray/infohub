@@ -1,0 +1,83 @@
+/* ══════════════════════════════════════
+   HOME — Dashboard, Task Widgets, Notifications
+══════════════════════════════════════ */
+
+.home-main { max-width: 1280px; margin: 0 auto; padding: 32px 28px 60px; }
+
+.section-label {
+  font-family: 'DM Serif Display', serif; font-size: 1.05rem; font-style: italic;
+  color: var(--ink-muted); margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── 3-column grid ── */
+.columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; align-items: start; }
+
+@media (max-width: 1024px) {
+  .columns { grid-template-columns: 1fr 1fr; }
+  .col-calendar { grid-column: span 2; }
+}
+@media (max-width: 640px) {
+  .columns { grid-template-columns: 1fr; }
+  .col-calendar { grid-column: span 1; }
+  .home-main { padding: 20px 14px 80px; }
+}
+
+/* ── Column card ── */
+.col-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+
+.col-title {
+  font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: var(--ink);
+  margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;
+}
+.col-title .badge {
+  font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 600;
+  background: var(--surface-2); color: var(--ink-muted); padding: 2px 9px; border-radius: 20px;
+}
+.col-subtitle { font-size: 0.78rem; color: var(--ink-muted); margin-bottom: 18px; }
+
+/* ── Task widgets (dashboard summary) ── */
+.task-widget {
+  display: flex; align-items: flex-start; gap: 12px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 13px 14px;
+  margin-bottom: 10px; cursor: pointer; transition: all 0.18s; text-decoration: none; color: inherit;
+}
+.task-widget:hover { border-color: var(--accent); box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+
+.task-check {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border);
+  flex-shrink: 0; margin-top: 2px; transition: border-color 0.15s;
+}
+.task-widget:hover .task-check { border-color: var(--accent); }
+
+.task-info { flex: 1; }
+.task-name { font-size: 0.875rem; font-weight: 500; color: var(--ink); margin-bottom: 4px; line-height: 1.35; }
+.task-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.task-tag { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.02em; text-transform: uppercase; }
+.tag-green  { background: var(--accent-light);      color: var(--accent); }
+.tag-orange { background: var(--accent-warm-light);  color: var(--accent-warm); }
+.tag-blue   { background: var(--tag-blue-light);     color: var(--tag-blue); }
+
+.task-due { font-size: 0.72rem; color: var(--ink-muted); }
+.task-due.overdue { color: var(--accent-warm); }
+
+.priority-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.dot-high { background: var(--accent-warm); }
+.dot-med  { background: #E5AA1A; }
+.dot-low  { background: var(--accent); }
+
+/* ── Notification widgets ── */
+.notif-widget {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--border); border-radius: var(--radius-sm);
+  padding: 13px 14px; margin-bottom: 10px;
+}
+.notif-widget.notif-info { border-left-color: var(--tag-blue); }
+.notif-widget.notif-warn { border-left-color: var(--accent-warm); }
+.notif-widget.notif-ok   { border-left-color: var(--accent); }
+
+.notif-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.notif-title  { font-size: 0.85rem; font-weight: 600; color: var(--ink); }
+.notif-time   { font-size: 0.7rem; color: var(--ink-muted); }
+.notif-body   { font-size: 0.79rem; color: var(--ink-muted); line-height: 1.5; }
