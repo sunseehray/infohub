@@ -1,17 +1,17 @@
 /**
- * CalendarController
- * Coordinates CalendarModel ↔ CalendarView and handles all calendar interactions:
- * month navigation, day selection, wheel FAB, modals, and touch swipe.
+ * CalendarController.js  (async)
+ * Coordinates CalendarModel ↔ CalendarView.
+ * Model calls are now async (API-backed), so rendering is deferred until
+ * data is ready. All public methods that trigger data fetches are async.
  */
 const CalendarController = (() => {
 
   const TODAY = new Date(); TODAY.setHours(0, 0, 0, 0);
 
   let calYear      = TODAY.getFullYear();
-  let calMonth     = TODAY.getMonth();   // 0-based
+  let calMonth     = TODAY.getMonth();
   let selectedDate = null;
-
-  let agendaStart  = new Date(TODAY);    // First of the 3 visible agenda days
+  let agendaStart  = new Date(TODAY);
 
   const EVENT_COLORS = ['#1A4F7A','#2E6B4F','#C4570F','#5B3A8E','#92400E','#1A6B6B','#7A2E2E','#6B6B1A'];
 
@@ -19,20 +19,30 @@ const CalendarController = (() => {
 
   function _isMobile() { return window.innerWidth <= 768; }
 
-  function _offsetDate(base, days) {
-    const d = new Date(base);
-    d.setDate(d.getDate() + days);
-    return d;
+  function _monthRange(year, month) {
+    const from = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const to   = `${year}-${String(month + 1).padStart(2, '0')}-${lastDay}`;
+    return { from, to };
   }
 
-  // ── Month calendar ───────────────────────────────────────────────────────────
+  // ── Month calendar ────────────────────────────────────────────────────────────
 
-  function _renderAll() {
+  async function _renderAll() {
+    // Fetch the entire month's entries into cache, then render
+    const { from, to } = _monthRange(calYear, calMonth);
+    try {
+      await CalendarModel.fetchRange(from, to);
+    } catch (err) {
+      console.error('Calendar fetch error:', err);
+    }
+
     CalendarView.renderMonthGrid(
       calYear, calMonth, TODAY, selectedDate,
       CalendarModel.getEntries,
       _selectDay,
     );
+
     if (selectedDate) {
       CalendarView.renderDayDetail(
         selectedDate,
@@ -41,16 +51,27 @@ const CalendarController = (() => {
     }
   }
 
-  function _selectDay(date) {
+  async function _selectDay(date) {
     selectedDate = date;
-    _renderAll();
-    CalendarView.renderDayDetail(
-      date,
-      CalendarModel.getEntries(CalendarModel.toKey(date)),
+    const isoKey = CalendarModel.toKey(date);
+
+    // Fetch this day specifically (ensures cache is fresh for day detail)
+    try {
+      await CalendarModel.fetchDate(isoKey);
+    } catch (err) {
+      console.error('Day fetch error:', err);
+    }
+
+    // Re-render the grid to update the selected highlight
+    CalendarView.renderMonthGrid(
+      calYear, calMonth, TODAY, selectedDate,
+      CalendarModel.getEntries,
+      _selectDay,
     );
+    CalendarView.renderDayDetail(date, CalendarModel.getEntries(isoKey));
   }
 
-  function calNav(dir) {
+  async function calNav(dir) {
     if (dir === 0) {
       calYear  = TODAY.getFullYear();
       calMonth = TODAY.getMonth();
@@ -59,13 +80,29 @@ const CalendarController = (() => {
       if (calMonth < 0)  { calMonth = 11; calYear--; }
       if (calMonth > 11) { calMonth = 0;  calYear++; }
     }
-    _renderAll();
+    await _renderAll();
   }
 
-  // ── Mobile agenda ────────────────────────────────────────────────────────────
+  // ── Mobile agenda ─────────────────────────────────────────────────────────────
 
-  function agendaNav(delta) {
-    agendaStart = _offsetDate(agendaStart, delta);
+  async function agendaNav(delta) {
+    const d = new Date(agendaStart);
+    d.setDate(d.getDate() + delta);
+    agendaStart = d;
+
+    // Fetch the 3 days about to be shown
+    const keys = [0, 1, 2].map(i => {
+      const day = new Date(agendaStart);
+      day.setDate(day.getDate() + i);
+      return CalendarModel.toKey(day);
+    });
+
+    try {
+      await Promise.all(keys.map(k => CalendarModel.fetchDate(k)));
+    } catch (err) {
+      console.error('Agenda fetch error:', err);
+    }
+
     CalendarView.renderAgenda(
       agendaStart, TODAY, CalendarModel.getEntries,
       delta < 0 ? 'left' : 'right',
@@ -91,7 +128,7 @@ const CalendarController = (() => {
     }, { passive: true });
   }
 
-  // ── Wheel FAB ────────────────────────────────────────────────────────────────
+  // ── Wheel FAB ─────────────────────────────────────────────────────────────────
 
   function toggleWheel() {
     const wrap = document.getElementById('calFabWrap');
@@ -105,7 +142,7 @@ const CalendarController = (() => {
     document.getElementById('wheelBackdrop').classList.remove('visible');
   }
 
-  // ── Modals ───────────────────────────────────────────────────────────────────
+  // ── Modals ────────────────────────────────────────────────────────────────────
 
   function openModal(type) {
     closeWheel();
@@ -120,7 +157,7 @@ const CalendarController = (() => {
     document.getElementById('modal-' + type).classList.remove('open');
   }
 
-  function saveEntry(type) {
+  async function saveEntry(type) {
     const dateEl  = document.getElementById(type + '-date');
     const titleEl = document.querySelector(`#modal-${type} .form-input[type="text"]`);
     const timeEl  = document.querySelector(`#modal-${type} input[type="time"]`);
@@ -130,26 +167,31 @@ const CalendarController = (() => {
 
     if (!title) { titleEl?.focus(); return; }
 
-    const isoKey = dateVal || CalendarModel.toKey(TODAY);
-    const entry  = { type, title };
-    if (timeEl?.value) entry.time = timeEl.value;
+    const isoKey  = dateVal || CalendarModel.toKey(TODAY);
+    const entryObj = { type, title };
+    if (timeEl?.value) entryObj.time = timeEl.value;
 
     if (type === 'event') {
       const sel = document.querySelector('#event-colors .color-swatch.selected');
-      if (sel) entry.color = sel.style.background;
+      if (sel) entryObj.color = sel.style.background;
     }
 
-    CalendarModel.addEntry(isoKey, entry);
+    try {
+      await CalendarModel.addEntry(isoKey, entryObj);
 
-    // Refresh desktop grid if the saved date is in the current month view
-    const saved = new Date(isoKey + 'T00:00:00');
-    if (saved.getFullYear() === calYear && saved.getMonth() === calMonth) {
-      _selectDay(saved);
-    }
+      // Refresh the view
+      const saved = new Date(isoKey + 'T00:00:00');
+      if (saved.getFullYear() === calYear && saved.getMonth() === calMonth) {
+        await _selectDay(saved);
+      }
 
-    // Refresh mobile agenda
-    if (_isMobile()) {
-      CalendarView.renderAgenda(agendaStart, TODAY, CalendarModel.getEntries, null);
+      if (_isMobile()) {
+        CalendarView.renderAgenda(agendaStart, TODAY, CalendarModel.getEntries, null);
+      }
+    } catch (err) {
+      console.error('saveEntry error:', err);
+      alert(`Could not save entry: ${err.message}`);
+      return;
     }
 
     // Clear fields and close
@@ -158,15 +200,15 @@ const CalendarController = (() => {
     closeModal(type);
   }
 
-  // ── Init ─────────────────────────────────────────────────────────────────────
+  // ── Init ──────────────────────────────────────────────────────────────────────
 
-  function init() {
-    // Month nav buttons
+  async function init() {
+    // Month nav
     document.querySelector('[data-cal-nav="-1"]')?.addEventListener('click', () => calNav(-1));
     document.querySelector('[data-cal-nav="0"]')?.addEventListener('click',  () => calNav(0));
     document.querySelector('[data-cal-nav="1"]')?.addEventListener('click',  () => calNav(1));
 
-    // Agenda nav buttons
+    // Agenda nav
     document.querySelector('[data-agenda-nav="-3"]')?.addEventListener('click', () => agendaNav(-3));
     document.querySelector('[data-agenda-nav="3"]')?.addEventListener('click',  () => agendaNav(3));
 
@@ -179,7 +221,7 @@ const CalendarController = (() => {
     document.querySelector('.wo-task')?.addEventListener('click',     () => openModal('task'));
     document.querySelector('.wo-reminder')?.addEventListener('click', () => openModal('reminder'));
 
-    // Modal close buttons and backdrop
+    // Modal close / save
     ['event', 'task', 'reminder'].forEach(type => {
       document.querySelector(`#modal-${type} .modal-close`)
         ?.addEventListener('click', () => closeModal(type));
@@ -191,19 +233,27 @@ const CalendarController = (() => {
         ?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(type); });
     });
 
-    // Build event colour swatches
     CalendarView.buildColorSwatches(EVENT_COLORS);
 
-    // Seed demo data
-    CalendarModel.seedDemo();
-
     // Initial renders
-    _selectDay(TODAY);
+    await _selectDay(TODAY);
+
+    // Fetch agenda days
+    const agendaKeys = [0, 1, 2].map(i => {
+      const d = new Date(agendaStart);
+      d.setDate(d.getDate() + i);
+      return CalendarModel.toKey(d);
+    });
+    try {
+      await Promise.all(agendaKeys.map(k => CalendarModel.fetchDate(k)));
+    } catch (err) {
+      console.error('Initial agenda fetch error:', err);
+    }
     CalendarView.renderAgenda(agendaStart, TODAY, CalendarModel.getEntries, null);
+
     _initSwipe();
   }
 
-  // Expose only what HTML data-attributes or other controllers need
   return { init, calNav, agendaNav, openModal, closeModal, saveEntry, toggleWheel };
 
 })();

@@ -1,0 +1,17 @@
+{
+  "name": "infohub-server",
+  "version": "1.0.0",
+  "description": "InfoHub local network server",
+  "main": "server/app.js",
+  "scripts": {
+    "start": "node server/app.js",
+    "dev": "nodemon server/app.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "express": "^4.22.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
