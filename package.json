@@ -1,15 +1,20 @@
 {
   "name": "infohub-server",
-  "version": "1.0.0",
-  "description": "InfoHub local network server",
+  "version": "2.0.0",
+  "description": "InfoHub local network server — with auth and PostgreSQL support",
   "main": "server/app.js",
   "scripts": {
     "start": "node server/app.js",
     "dev": "nodemon server/app.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "better-sqlite3": "^9.4.3",
-    "express": "^4.22.1"
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

@@ -54,7 +54,7 @@ const TaskModel = (() => {
       per_page: PER_PAGE,
     });
 
-    const res  = await fetch(`/api/tasks?${params}`);
+    const res  = await Auth.apiFetch(`/api/tasks?${params}`);
     const json = await res.json();
 
     if (!res.ok) throw new Error(json.error || 'Failed to fetch tasks');
@@ -89,7 +89,7 @@ const TaskModel = (() => {
    * @returns {Promise<Object>}  created task
    */
   async function createTask(fields) {
-    const res  = await fetch('/api/tasks', {
+    const res  = await Auth.apiFetch('/api/tasks', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(fields),
@@ -106,7 +106,7 @@ const TaskModel = (() => {
    * @returns {Promise<Object>}  updated task
    */
   async function updateTask(id, fields) {
-    const res  = await fetch(`/api/tasks/${id}`, {
+    const res  = await Auth.apiFetch(`/api/tasks/${id}`, {
       method:  'PUT',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(fields),
@@ -121,7 +121,7 @@ const TaskModel = (() => {
    * @param {number} id
    */
   async function deleteTask(id) {
-    const res  = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+    const res  = await Auth.apiFetch(`/api/tasks/${id}`, { method: 'DELETE' });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Delete failed');
     return json.message;
@@ -132,7 +132,7 @@ const TaskModel = (() => {
    * @returns {Promise<Array>}
    */
   async function getUsers() {
-    const res  = await fetch('/api/users');
+    const res  = await Auth.apiFetch('/api/users');
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Failed to fetch users');
     return json.data;

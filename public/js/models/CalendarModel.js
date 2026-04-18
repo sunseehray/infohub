@@ -39,7 +39,7 @@ const CalendarModel = (() => {
    * @param {string} to    YYYY-MM-DD
    */
   async function fetchRange(from, to) {
-    const res  = await fetch(`/api/calendar?from=${from}&to=${to}`);
+    const res  = await Auth.apiFetch(`/api/calendar?from=${from}&to=${to}`);
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Failed to fetch calendar entries');
 
@@ -58,7 +58,7 @@ const CalendarModel = (() => {
    * @param {string} isoKey  YYYY-MM-DD
    */
   async function fetchDate(isoKey) {
-    const res  = await fetch(`/api/calendar/date/${isoKey}`);
+    const res  = await Auth.apiFetch(`/api/calendar/date/${isoKey}`);
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Failed to fetch entries');
     _storeEntries(isoKey, json.data.map(_normalise));
@@ -71,7 +71,7 @@ const CalendarModel = (() => {
    * @returns {Promise<Object>}  the created entry (with id)
    */
   async function addEntry(isoKey, entryObj) {
-    const res  = await fetch('/api/calendar', {
+    const res  = await Auth.apiFetch('/api/calendar', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ ...entryObj, entry_date: isoKey }),
@@ -91,7 +91,7 @@ const CalendarModel = (() => {
    * @param {string} isoKey  YYYY-MM-DD (to locate in cache)
    */
   async function deleteEntry(id, isoKey) {
-    const res  = await fetch(`/api/calendar/${id}`, { method: 'DELETE' });
+    const res  = await Auth.apiFetch(`/api/calendar/${id}`, { method: 'DELETE' });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Delete failed');
 
